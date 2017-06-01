@@ -579,12 +579,12 @@ object.size(megaframe)
 write.csv(megaframe, "megaframe.csv")
 
 
-megaframe<- read_csv("megaframe.csv")
+megaframe<- read_csv("~/Documents/CPB/CPB_TEs/megaframe.csv")
 
 #### Make a graph of TE <-> GO_terms ####
 
 library(igraph)
-TE_GO_Edgelist <- na.omit(dplyr::select(megaframe, Unique_Name, GOSLIM))
+TE_GO_Edgelist <- na.omit(dplyr::select(megaframe, Unique_Name, GOSLIM, TE_type))
 # TE_GO_Graph <- graph_from_data_frame(TE_GO_Edgelist)
 # #owlbear = filter(dplyr::select(megaframe, Unique_Name, term_ID), Unique_Name=="Owlbear")
 # #TE_GO_Graph <- graph_from_data_frame(owlbear)
@@ -610,6 +610,20 @@ TE_GO_Edgelist <- na.omit(dplyr::select(megaframe, Unique_Name, GOSLIM))
 #      vertex.color = col[as.numeric(V(headgraph)$type)+1],
 #      vertex.shape = shape[as.numeric(V(headgraph)$type)+1]
 # )
+
+#### count tables for TEs, GO terms, TE type, etc - SLIM ####
+setwd("~/Documents/CPB/CPB_TEs/")
+library("RCurl")
+library("grid")
+library("scales")
+library("gridExtra")
+te_type_table <- select(megaframe, TE_type) %>% group_by(TE_type) %>% tally() 
+te_type_table <- na.omit(arrange(te_type_table, desc(n)))
+colnames(te_type_table) <- c("TE Type", "Count")
+
+pdf("TE_type_table.pdf", width=4, height=10)
+grid.draw(tableGrob(te_type_table))
+dev.off()
 
 hg <- TE_GO_Edgelist
 hg <- hg %>% group_by_(.dots=c("Unique_Name", "GOSLIM")) %>% tally()
@@ -656,7 +670,7 @@ is.bipartite(headgraph) #just a check
 is.directed(headgraph)
 
 #### degree distribution ####
-degree_distribution(
+degree_distribution()
 
 #### commmunity detection ####
 
@@ -845,5 +859,16 @@ bipgraph <- as.matrix(bipgraph)
 
 
 degreedistr(hg2)
+
+?heatmap
+x  <- as.matrix(mtcars)
+rc <- rainbow(nrow(x), start = 0, end = .3)
+cc <- rainbow(ncol(x), start = 0, end = .3)
+hv <- heatmap(x, col = cm.colors(256), scale = "column",
+              RowSideColors = rc, ColSideColors = cc, margins = c(5,10),
+              xlab = "specification variables", ylab =  "Car Models",
+              main = "", Rowv=-rowSums(x), Colv=-rowMeans(x))
+
+
 
 
